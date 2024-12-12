@@ -119,18 +119,11 @@ variable "health_check" {
 }
 
 variable "ecs_lifecycle_policy" {
-  description = "The lifecycle policy configuration for the ECS service"
   type = object({
     ignore_changes = list(string)
   })
   default = {
-    ignore_changes = [
-      "desired_count",
-      "task_definition",
-      "load_balancer",
-      "service_registries",
-      "service_connect_configuration",
-    ]
+    ignore_changes = ["desired_count", "task_definition"]
   }
 }
 

@@ -122,8 +122,8 @@ resource "aws_ecs_service" "ecs_service" {
 
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
   lifecycle {
-    ignore_changes = var.ecs_lifecycle_policy.ignore_changes
-  }
+  ignore_changes = var.ecs_lifecycle_policy.ignore_changes
+}
   depends_on = [aws_servicediscovery_private_dns_namespace.ecs_service_namespace, aws_servicediscovery_service.ecs_service_service]
 }
 
