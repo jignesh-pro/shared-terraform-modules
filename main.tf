@@ -160,11 +160,9 @@ resource "aws_lb_target_group" "ecs_service_target_group" {
 
 //Create Namespace for ECS Service
 resource "aws_service_discovery_private_dns_namespace" "ecs_service_namespace" {
-  count       = length(data.aws_service_discovery_namespace.existing.filter) == 0 ? 1 : 0
-  name        = "${local.common_name}-svc.local"
-  description = "Private DNS Namespace for ECS Service"
-  vpc         = var.vpc_id
-  tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
+  count = length(data.aws_service_discovery_http_namespace.existing) == 0 ? 1 : 0
+  name = "${local.common_name}-svc.local"
+  vpc  = var.vpc_id
 }
 
 //Create Service Discovery Service for ECS Service
