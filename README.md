@@ -33,13 +33,20 @@ provider "aws" {
   region = "us-west-2"
 }
 
- //Create Namespace for ECS Service
- resource "aws_servicediscovery_private_dns_namespace" "ecs_service_namespace" {
-   name        = "${local.common_name}-svc.local"
-   description = "Private DNS Namespace for ECS Service"
-   vpc         = module.vpc.vpc_id
-   tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
- }
+//Create ECS Cluster
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "${local.common_name}-ecs-cluster"
+  service_connect_defaults {
+    namespace = aws_service_discovery_http_namespace.sd_http_ns.arn
+  }
+  tags = merge(local.common_tags, { "Name" = "${local.common_name}-ecs-cluster" })
+}
+
+resource "aws_service_discovery_http_namespace" "sd_http_ns" {
+  name        = "${local.common_name}-svc.local"
+  description = "Service Discovery HTTP Namespace for ECS Service"
+  tags = merge(local.common_tags, { Name = "${local.common_name}-svc.local" })
+}
 
 module "ecs_service" {
   source = ""git::https://github.com/jignesh-pro/shared-terraform-modules.git//?ref=ecs""
