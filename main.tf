@@ -121,6 +121,11 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
+
+  depends_on = [
+    aws_servicediscovery_private_dns_namespace.ecs_service_namespace,
+  aws_servicediscovery_service.ecs_service_service
+  ]
   lifecycle {
     ignore_changes = [
       desired_count,
@@ -130,7 +135,6 @@ resource "aws_ecs_service" "ecs_service" {
       service_connect_configuration,
     ]
   }
-  depends_on = [aws_servicediscovery_private_dns_namespace.ecs_service_namespace, aws_servicediscovery_service.ecs_service_service]
 }
 
 //Create a target group for the ECS service
