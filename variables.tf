@@ -117,9 +117,3 @@ variable "health_check" {
     port = 80
   }
 }
-
-variable "private_dns_namespace_id" {
-  description = "The name of the Private DNS Namespace for the ECS service"
-  type        = string
-
-}
