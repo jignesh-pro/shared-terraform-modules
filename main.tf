@@ -123,11 +123,11 @@ resource "aws_ecs_service" "ecs_service" {
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
   lifecycle {
     ignore_changes = [
-      "desired_count",
-      "task_definition",
-      "load_balancer",
-      "service_registries",
-      "service_connect_configuration",
+      desired_count,
+      task_definition,
+      load_balancer,
+      service_registries,
+      service_connect_configuration,
     ]
   }
 }
