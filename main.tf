@@ -1,5 +1,14 @@
 //get region
 data "aws_region" "current" {}
+
+data "aws_service_discovery_private_dns_namespace" "existing" {
+  name = "${local.common_name}-svc.local"
+}
+
+data "aws_service_discovery_http_namespace" "existing" {
+  name = "${local.common_name}-svc.local"
+}
+
 locals {
   common_name = "${var.environment}-${var.project}-${var.application}"
 }
@@ -110,7 +119,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   service_connect_configuration {
     enabled   = true
-    namespace = length(data.aws_service_discovery_private_dns_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_private_dns_namespace.existing.id
+    namespace = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
 
     service {
       port_name = "http"
@@ -158,7 +167,7 @@ resource "aws_service_discovery_private_dns_namespace" "ecs_service_namespace" {
   count       = length(data.aws_service_discovery_namespace.existing.filter) == 0 ? 1 : 0
   name        = "${local.common_name}-svc.local"
   description = "Private DNS Namespace for ECS Service"
-  vpc         = module.vpc.vpc_id
+  vpc         = var.vpc_id
   tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
 }
 
