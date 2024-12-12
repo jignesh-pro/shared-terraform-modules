@@ -105,12 +105,12 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   service_registries {
-    registry_arn = aws_servicediscovery_service.ecs_service_service.arn
+    registry_arn = aws_service_discovery_service.ecs_service_service.arn
   }
 
   service_connect_configuration {
     enabled   = true
-    namespace = aws_servicediscovery_private_dns_namespace.ecs_service_namespace.id
+    namespace = var.private_dns_namespace_id
 
     service {
       port_name = "http"
@@ -121,11 +121,6 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
-
-  depends_on = [
-    aws_servicediscovery_private_dns_namespace.ecs_service_namespace,
-    aws_servicediscovery_service.ecs_service_service
-  ]
   lifecycle {
     ignore_changes = [
       "desired_count",
