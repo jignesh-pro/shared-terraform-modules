@@ -20,7 +20,12 @@ output "ecs_service_name" {
 
 output "ecs_service_target_group_arn" {
   description = "The ARN of the Target Group for the ECS service"
-  value       = aws_lb_target_group.ecs_service_target_group.arn
+  value       = try(aws_lb_target_group.ecs_service_target_group[0].arn, null)
+}
+
+output "ecs_service_target_group_name" {
+  description = "The name of the Target Group for the ECS service"
+  value       = try(aws_lb_target_group.ecs_service_target_group[0].name, null)
 }
 
 output "ecs_service_autoscaling_target_id" {
@@ -36,10 +41,4 @@ output "ecs_cpu_service_policy_arn" {
 output "ecs_memory_service_policy_arn" {
   description = "The ARN of the ECS Service Autoscaling Policy for Memory"
   value       = aws_appautoscaling_policy.ecs_memory_service_policy.arn
-}
-
-output "ecs_lb_target_group_arn" {
-  description = "The ARN of the Target Group for the ECS service"
-  value       = aws_lb_target_group.ecs_service_target_group.arn
-
 }

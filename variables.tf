@@ -15,7 +15,7 @@ variable "project" {
   default     = "test"
 }
 
-variable "application" {
+variable "application_name" {
   description = "The name of the application"
   type        = string
   default     = "api"
@@ -93,6 +93,12 @@ variable "ecs_cluster_arn" {
 
 }
 
+variable "ecs_cluster_name" {
+  description = "The name of the ECS cluster"
+  type        = string
+
+}
+
 variable "container_desired_count" {
   description = "The desired count of the container"
   type        = number
@@ -115,5 +121,22 @@ variable "health_check" {
   default = {
     path = "/"
     port = 80
+  }
+}
+
+variable "private_dns_namespace_id" {
+  description = "The ID of the private DNS namespace"
+  type        = string
+
+}
+
+variable "application_type" {
+  description = "The type of the application Allowed values are external or internal"
+  type        = string
+  default     = "internal"
+
+  validation {
+    condition     = contains(["external", "internal"], var.application_type)
+    error_message = "The environment must be one of 'external' or 'internal'."
   }
 }

@@ -1,13 +1,8 @@
 //get region
 data "aws_region" "current" {}
 
-// Data block to check if the HTTP namespace exists
-data "aws_service_discovery_http_namespace" "existing" {
-  name = "${local.common_name}-svc.local"
-}
-
 locals {
-  common_name = "${var.environment}-${var.project}-${var.application}"
+  common_name = "${var.environment}-${var.project}-${var.application_name}"
 }
 
 //Create Cloudwatch Group for ECS service Logs
@@ -47,11 +42,12 @@ resource "aws_ecs_task_definition" "api_task_definition" {
   requires_compatibilities = ["FARGATE"]
   container_definitions = jsonencode([
     {
-      name      = "${local.common_name}-API-Container"
-      image     = var.application_ecr_image
-      cpu       = tonumber(var.ecs_cpu)
-      memory    = tonumber(var.ecs_memory)
-      essential = true
+      name                   = var.application_name
+      image                  = var.application_ecr_image
+      cpu                    = tonumber(var.ecs_cpu)
+      memory                 = tonumber(var.ecs_memory)
+      enable_execute_command = true
+      essential              = true
       portMappings = [
         {
           containerPort = tonumber(var.application_port)
@@ -92,10 +88,13 @@ resource "aws_ecs_service" "ecs_service" {
     weight            = 1
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.ecs_service_target_group.arn
-    container_name   = var.application
-    container_port   = var.application_port
+  dynamic "load_balancer" {
+    for_each = var.application_type == "external" ? [1] : []
+    content {
+      target_group_arn = aws_lb_target_group.ecs_service_target_group.arn
+      container_name   = var.application_name
+      container_port   = var.application_port
+    }
   }
 
   deployment_maximum_percent         = 200
@@ -110,16 +109,13 @@ resource "aws_ecs_service" "ecs_service" {
     rollback = true
   }
 
-  service_registries {
-    registry_arn = aws_service_discovery_service.ecs_service_service.arn
-  }
-
   service_connect_configuration {
     enabled   = true
-    namespace = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
+    namespace = var.private_dns_namespace_id
 
     service {
-      port_name = "http"
+      port_name      = "http"
+      discovery_name = var.application_name
       client_alias {
         port = var.application_port
       }
@@ -131,7 +127,7 @@ resource "aws_ecs_service" "ecs_service" {
     ignore_changes = [
       desired_count,
       task_definition,
-      load_balancer,
+      # load_balancer,
       # service_registries,
       # service_connect_configuration,
     ]
@@ -140,6 +136,7 @@ resource "aws_ecs_service" "ecs_service" {
 
 //Create a target group for the ECS service
 resource "aws_lb_target_group" "ecs_service_target_group" {
+  count       = var.application_type == "external" ? 1 : 0
   name        = "${local.common_name}-SVCECSTargetGroup"
   port        = var.application_port
   protocol    = "HTTP"
@@ -159,45 +156,18 @@ resource "aws_lb_target_group" "ecs_service_target_group" {
   tags = merge(var.tags, { Name = "${local.common_name}-SVCECSTargetGroup" })
 }
 
-//Create Namespace for ECS Service
-resource "aws_service_discovery_private_dns_namespace" "ecs_service_namespace" {
-  count = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? 1 : 0
-  name  = "${local.common_name}-svc.local"
-  vpc   = var.vpc_id
-}
-
-//Create Service Discovery Service for ECS Service
-resource "aws_service_discovery_service" "ecs_service_service" {
-  name = "${local.common_name}-svc"
-  namespace_id = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
-
-  dns_config {
-    namespace_id = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
-    routing_policy = "MULTIVALUE"
-
-    dns_records {
-      type = "A"
-      ttl  = 60
-    }
-  }
-
-  health_check_custom_config {
-    failure_threshold = 1
-  }
-}
-
 //Create ECS Service Autoscaling Policy
 resource "aws_appautoscaling_target" "ecs_service_target" {
   max_capacity       = var.container_max_count
   min_capacity       = var.container_desired_count
-  resource_id        = "service/${var.ecs_cluster_arn}/${aws_ecs_service.ecs_service.name}"
+  resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.ecs_service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
 //Create ECS Service Autoscaling Policy for CPU
 resource "aws_appautoscaling_policy" "ecs_cpu_service_policy" {
-  name               = "${var.application}-CPUECSServiceScalingPolicy"
+  name               = "${var.application_name}-CPUECSServiceScalingPolicy"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_service_target.scalable_dimension
@@ -215,7 +185,7 @@ resource "aws_appautoscaling_policy" "ecs_cpu_service_policy" {
 
 //Create ECS Service Autoscaling Policy for Memory
 resource "aws_appautoscaling_policy" "ecs_memory_service_policy" {
-  name               = "${var.application}-MemoryECSServiceScalingPolicy"
+  name               = "${var.application_name}-MemoryECSServiceScalingPolicy"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.ecs_service_target.resource_id
   scalable_dimension = aws_appautoscaling_target.ecs_service_target.scalable_dimension
