@@ -127,13 +127,7 @@ resource "aws_ecs_service" "ecs_service" {
   aws_servicediscovery_service.ecs_service_service
   ]
   lifecycle {
-    ignore_changes = [
-      desired_count,
-      task_definition,
-      load_balancer,
-      service_registries,
-      service_connect_configuration,
-    ]
+    ignore_changes = var.ecs_lifecycle_policy_ignore_changes
   }
 }
 
