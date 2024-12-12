@@ -116,7 +116,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   service_connect_configuration {
     enabled   = true
-    namespace = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
+    namespace = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
 
     service {
       port_name = "http"
@@ -161,18 +161,18 @@ resource "aws_lb_target_group" "ecs_service_target_group" {
 
 //Create Namespace for ECS Service
 resource "aws_service_discovery_private_dns_namespace" "ecs_service_namespace" {
-  count = length(data.aws_service_discovery_http_namespace.existing) == 0 ? 1 : 0
-  name = "${local.common_name}-svc.local"
-  vpc  = var.vpc_id
+  count = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? 1 : 0
+  name  = "${local.common_name}-svc.local"
+  vpc   = var.vpc_id
 }
 
 //Create Service Discovery Service for ECS Service
 resource "aws_service_discovery_service" "ecs_service_service" {
   name = "${local.common_name}-svc"
-  namespace_id = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
+  namespace_id = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
 
   dns_config {
-    namespace_id = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
+    namespace_id = length(data.aws_service_discovery_http_namespace.existing.id) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
     routing_policy = "MULTIVALUE"
 
     dns_records {
