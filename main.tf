@@ -1,10 +1,6 @@
 //get region
 data "aws_region" "current" {}
 
-data "aws_service_discovery_private_dns_namespace" "existing" {
-  name = "${local.common_name}-svc.local"
-}
-
 data "aws_service_discovery_http_namespace" "existing" {
   name = "${local.common_name}-svc.local"
 }
