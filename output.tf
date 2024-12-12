@@ -23,16 +23,6 @@ output "ecs_service_target_group_arn" {
   value       = aws_lb_target_group.ecs_service_target_group.arn
 }
 
-output "ecs_service_namespace_id" {
-  description = "The ID of the Private DNS Namespace for the ECS service"
-  value       = aws_servicediscovery_private_dns_namespace.ecs_service_namespace.id
-}
-
-output "ecs_service_service_id" {
-  description = "The ID of the Service Discovery Service for the ECS service"
-  value       = aws_servicediscovery_service.ecs_service_service.id
-}
-
 output "ecs_service_autoscaling_target_id" {
   description = "The ID of the ECS Service Autoscaling Target"
   value       = aws_appautoscaling_target.ecs_service_target.id
@@ -51,5 +41,5 @@ output "ecs_memory_service_policy_arn" {
 output "ecs_lb_target_group_arn" {
   description = "The ARN of the Target Group for the ECS service"
   value       = aws_lb_target_group.ecs_service_target_group.arn
-  
+
 }

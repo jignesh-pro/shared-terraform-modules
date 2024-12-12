@@ -15,7 +15,7 @@ resource "aws_cloudwatch_log_group" "ecs_service_log_group" {
 resource "aws_security_group" "ecs_service_sg" {
   name        = "${local.common_name}-SVCECSSG"
   description = "Security Group for ECS Service"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = var.vpc_id
   ingress {
     from_port   = var.application_port
     to_port     = var.application_port
@@ -124,17 +124,17 @@ resource "aws_ecs_service" "ecs_service" {
 
   depends_on = [
     aws_servicediscovery_private_dns_namespace.ecs_service_namespace,
-  aws_servicediscovery_service.ecs_service_service
+    aws_servicediscovery_service.ecs_service_service
   ]
   lifecycle {
-  ignore_changes = [
-    "desired_count",
-    "task_definition",
-    "load_balancer",
-    "service_registries",
-    "service_connect_configuration",
-  ]
-}
+    ignore_changes = [
+      "desired_count",
+      "task_definition",
+      "load_balancer",
+      "service_registries",
+      "service_connect_configuration",
+    ]
+  }
 }
 
 //Create a target group for the ECS service
@@ -167,7 +167,7 @@ resource "aws_lb_target_group" "ecs_service_target_group" {
 # }
 
 //Create Service Discovery Service for ECS Service
-resource "aws_servicediscovery_service" "ecs_service_service" {
+resource "aws_service_discovery_service" "ecs_service_service" {
   name = var.application
   dns_config {
     namespace_id = var.private_dns_namespace_id
@@ -180,7 +180,7 @@ resource "aws_servicediscovery_service" "ecs_service_service" {
   health_check_custom_config {
     failure_threshold = 1
   }
-  tags         = merge(var.tags, { Name = "${local.common_name}-svc" })
+  tags = merge(var.tags, { Name = "${local.common_name}-svc" })
 }
 
 //Create ECS Service Autoscaling Policy
