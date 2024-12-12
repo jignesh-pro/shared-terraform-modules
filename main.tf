@@ -110,7 +110,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   service_connect_configuration {
     enabled   = true
-    namespace = length(data.aws_service_discovery_namespace.existing.filter) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_namespace.existing.filter[0].id
+    namespace = length(data.aws_service_discovery_private_dns_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_private_dns_namespace.existing.id
 
     service {
       port_name = "http"
