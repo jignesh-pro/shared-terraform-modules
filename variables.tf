@@ -123,8 +123,3 @@ variable "private_dns_namespace_id" {
   type        = string
   
 }
-
-variable "ecs_lifecycle_policy_ignore_changes" {
-  type    = list(string)
-  default = ["desired_count", "task_definition", "load_balancer", "service_registries", "service_connect_configuration"]
-}
