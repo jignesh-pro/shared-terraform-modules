@@ -33,6 +33,14 @@ provider "aws" {
   region = "us-west-2"
 }
 
+ //Create Namespace for ECS Service
+ resource "aws_servicediscovery_private_dns_namespace" "ecs_service_namespace" {
+   name        = "${local.common_name}-svc.local"
+   description = "Private DNS Namespace for ECS Service"
+   vpc         = module.vpc.vpc_id
+   tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
+ }
+
 module "ecs_service" {
   source = ""git::https://github.com/jignesh-pro/shared-terraform-modules.git//?ref=ecs""
 
@@ -51,6 +59,7 @@ module "ecs_service" {
   ecs_memory              = "1024"
   application_ecr_image   = "123456789012.dkr.ecr.us-west-2.amazonaws.com/myapp:latest"
   ecs_cluster_arn         = "arn:aws:ecs:us-west-2:123456789012:cluster/my-cluster"
+  private_dns_namespace_id = aws_servicediscovery_private_dns_namespace.ecs_service_namespace.id
   container_desired_count = 2
   container_max_count     = 4
   health_check = {

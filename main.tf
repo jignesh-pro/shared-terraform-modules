@@ -148,19 +148,19 @@ resource "aws_lb_target_group" "ecs_service_target_group" {
   tags = merge(var.tags, { Name = "${local.common_name}-SVCECSTargetGroup" })
 }
 
-//Create Namespace for ECS Service
-resource "aws_servicediscovery_private_dns_namespace" "ecs_service_namespace" {
-  name        = "${local.common_name}-svc.local"
-  description = "Private DNS Namespace for ECS Service"
-  vpc         = var.vpc_id
-  tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
-}
+# //Create Namespace for ECS Service
+# resource "aws_servicediscovery_private_dns_namespace" "ecs_service_namespace" {
+#   name        = "${local.common_name}-svc.local"
+#   description = "Private DNS Namespace for ECS Service"
+#   vpc         = var.vpc_id
+#   tags        = merge(var.tags, { Name = "${local.common_name}-svc.local" })
+# }
 
 //Create Service Discovery Service for ECS Service
 resource "aws_servicediscovery_service" "ecs_service_service" {
   name = var.application
   dns_config {
-    namespace_id = aws_servicediscovery_private_dns_namespace.ecs_service_namespace.id
+    namespace_id = var.private_dns_namespace_id
     dns_records {
       ttl  = 10
       type = "A"
@@ -170,8 +170,6 @@ resource "aws_servicediscovery_service" "ecs_service_service" {
   health_check_custom_config {
     failure_threshold = 1
   }
-
-  namespace_id = aws_servicediscovery_private_dns_namespace.ecs_service_namespace.id
   tags         = merge(var.tags, { Name = "${local.common_name}-svc" })
 }
 
