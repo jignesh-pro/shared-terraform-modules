@@ -118,15 +118,6 @@ variable "health_check" {
   }
 }
 
-variable "ecs_lifecycle_policy" {
-  type = object({
-    ignore_changes = list(string)
-  })
-  default = {
-    ignore_changes = ["desired_count", "task_definition"]
-  }
-}
-
 variable "private_dns_namespace_id" {
   description = "The name of the Private DNS Namespace for the ECS service"
   type        = string
