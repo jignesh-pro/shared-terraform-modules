@@ -1,6 +1,7 @@
 //get region
 data "aws_region" "current" {}
 
+// Data block to check if the HTTP namespace exists
 data "aws_service_discovery_http_namespace" "existing" {
   name = "${local.common_name}-svc.local"
 }
@@ -167,19 +168,22 @@ resource "aws_service_discovery_private_dns_namespace" "ecs_service_namespace" {
 
 //Create Service Discovery Service for ECS Service
 resource "aws_service_discovery_service" "ecs_service_service" {
-  name = var.application
+  name = "${local.common_name}-svc"
+  namespace_id = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
+
   dns_config {
-    namespace_id = length(data.aws_service_discovery_namespace.existing.filter) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_namespace.existing.filter[0].id
-    dns_records {
-      ttl  = 10
-      type = "A"
-    }
+    namespace_id = length(data.aws_service_discovery_http_namespace.existing) == 0 ? aws_service_discovery_private_dns_namespace.ecs_service_namespace[0].id : data.aws_service_discovery_http_namespace.existing.id
     routing_policy = "MULTIVALUE"
+
+    dns_records {
+      type = "A"
+      ttl  = 60
+    }
   }
+
   health_check_custom_config {
     failure_threshold = 1
   }
-  tags = merge(var.tags, { Name = "${local.common_name}-svc" })
 }
 
 //Create ECS Service Autoscaling Policy
