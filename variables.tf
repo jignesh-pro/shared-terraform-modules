@@ -140,3 +140,8 @@ variable "application_type" {
     error_message = "The environment must be one of 'external' or 'internal'."
   }
 }
+
+variable "application_protocol" {
+  description = "value of the protocol"
+  type        = string
+}

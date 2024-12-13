@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "api_task_definition" {
         {
           containerPort = tonumber(var.application_port)
           hostPort      = tonumber(var.application_port)
-          protocol      = "tcp"
+          protocol      = var.application_protocol
           name          = "http"
         }
       ]
