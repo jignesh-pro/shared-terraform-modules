@@ -109,18 +109,22 @@ resource "aws_ecs_service" "ecs_service" {
     rollback = true
   }
 
-  service_connect_configuration {
-    enabled   = true
-    namespace = var.private_dns_namespace_id
-
-    service {
-      port_name      = "http"
-      discovery_name = var.application_name
-      client_alias {
-        port = var.application_port
-      }
-    }
+  service_registries {
+    registry_arn = aws_service_discovery_service.service_discovery_service.arn
   }
+
+  # service_connect_configuration {
+  #   enabled   = true
+  #   namespace = var.private_dns_namespace_id
+
+  #   service {
+  #     port_name      = "http"
+  #     discovery_name = var.application_name
+  #     client_alias {
+  #       port = var.application_port
+  #     }
+  #   }
+  # }
 
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
   lifecycle {
@@ -132,6 +136,24 @@ resource "aws_ecs_service" "ecs_service" {
       # service_connect_configuration,
     ]
   }
+}
+
+// Create Service Discovery Service for API Service
+resource "aws_service_discovery_service" "service_discovery_service" {
+  name = var.application_name
+  dns_config {
+    namespace_id = var.private_dns_namespace_id
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+    routing_policy = "MULTIVALUE"
+  }
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+
+  tags = merge(var.tags, { "Name" = "${local.common_name}-Service" }, )
 }
 
 //Create a target group for the ECS service
