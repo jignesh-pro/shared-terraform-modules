@@ -113,18 +113,18 @@ resource "aws_ecs_service" "ecs_service" {
     registry_arn = aws_service_discovery_service.service_discovery_service.arn
   }
 
-  service_connect_configuration {
-    enabled   = true
-    namespace = var.private_dns_namespace_id
+  # service_connect_configuration {
+  #   enabled   = true
+  #   namespace = var.private_dns_namespace_id
 
-    # service {
-    #   port_name      = "http"
-    #   discovery_name = var.application_name
-    #   client_alias {
-    #     port = var.application_port
-    #   }
-    # }
-  }
+  # service {
+  #   port_name      = "http"
+  #   discovery_name = var.application_name
+  #   client_alias {
+  #     port = var.application_port
+  #   }
+  # }
+  # }
 
   tags = merge(var.tags, { Name = "${local.common_name}-svc" })
   lifecycle {
