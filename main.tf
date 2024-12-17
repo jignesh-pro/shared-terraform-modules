@@ -12,9 +12,14 @@ resource "aws_cloudwatch_log_group" "ecs_service_log_group" {
   tags              = merge(var.tags, { Name = "${local.common_name}-SVCECSLogGroup" })
 }
 
+resource "random_integer" "random_numbers" {
+  min   = 1000
+  max   = 9999
+}
+
 //Create Security Group for ECS Service
 resource "aws_security_group" "ecs_service_sg" {
-  name        = "${local.common_name}-SVCECSSG"
+  name        = "${local.common_name}-${random_integer.four_digit_number.result}-SVCECSSG"
   description = "Security Group for ECS Service"
   vpc_id      = var.vpc_id
   ingress {
