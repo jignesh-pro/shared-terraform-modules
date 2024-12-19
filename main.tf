@@ -164,7 +164,7 @@ resource "aws_service_discovery_service" "service_discovery_service" {
 //Create a target group for the ECS service
 resource "aws_lb_target_group" "ecs_service_target_group" {
   count       = var.application_type == "external" ? 1 : 0
-  name        = "${local.common_name}-SVCECSTargetGroup"
+  name        = "${local.common_name}-SVCECS-TG"
   port        = var.application_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
