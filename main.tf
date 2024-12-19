@@ -96,7 +96,7 @@ resource "aws_ecs_service" "ecs_service" {
   dynamic "load_balancer" {
     for_each = var.application_type == "external" ? [1] : []
     content {
-      target_group_arn = aws_lb_target_group.ecs_service_target_group.arn
+      target_group_arn = aws_lb_target_group.ecs_service_target_group[count.index].arn
       container_name   = var.application_name
       container_port   = var.application_port
     }
