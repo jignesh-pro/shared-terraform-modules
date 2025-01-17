@@ -106,6 +106,12 @@ variable "container_desired_count" {
 
 }
 
+variable "capacity_provider" {
+  description = "value of the capacity provider"
+  type = string
+  default = "FARGATE_SPOT"
+}
+
 variable "container_max_count" {
   description = "The maximum count of the container"
   type        = number

@@ -76,9 +76,9 @@ resource "aws_ecs_task_definition" "api_task_definition" {
   tags = merge(var.tags, { Name = "${local.common_name}-API-ECSTaskDefinition" })
 }
 
-locals {
-  capacity_provider = var.environment == "prod" ? (var.container_desired_count == 1 ? "FARGATE" : "FARGATE_SPOT") : "FARGATE_STOP"
-}
+# locals {
+#   capacity_provider = var.environment == "prod" ? (var.container_desired_count == 1 ? "FARGATE" : "FARGATE_SPOT") : "FARGATE_STOP"
+# }
 
 //create ecs service
 resource "aws_ecs_service" "ecs_service" {
@@ -93,7 +93,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   capacity_provider_strategy {
-    capacity_provider = local.capacity_provider
+    capacity_provider = var.capacity_provider
     weight            = 1
   }
 
